@@ -45,7 +45,7 @@
                     original
             .ui.segment#main-list-segment
                 .ui.divided.relaxed.list#main-list
-        .ui.segment
+        .ui.segment.piled
             .ui.fluid.action.input
                 %input#add-lecture-input{:type => "text", :placeholder=>"ETH Video Portal URL"}
                 .ui.compact.button{:onclick => "show_lecture($('#add-lecture-input').val())"}
@@ -56,7 +56,7 @@
         .ui.vertical.segment
             .ui.right.floated.sub.header
                 © Silas Gyger, 2019
-                %a.ui.label{:href=>"https://github.com/Nearoo"}
+                %a.ui.label{:href=>"https://github.com/Nearoo/eth-video-portal-lister"}
                     %i.github.icon
                     source
     #hidden
@@ -78,12 +78,15 @@
             .image.content
                 %img.image{:src => "expl1.png"}
                 .description
-                    Copy the link of the desired lecture on the <a href="https://www.video.ethz.ch/lectures.html">ETH Vied Portal</a>
-                    and paste it into the text field.
+                    %p 
+                        Copy the link of the desired lecture on the <a href="https://www.video.ethz.ch/lectures.html">ETH Video Portal</a>
+                        and paste it into the text field.
             .image.content
                 %img.image{:src => "expl2.png"}
                 .description
-                    After pressing "Add Lecture", add the page to your favorites for easy access later.
+                    %p
+                        For easy access, add the generated link to your bookmarks.
+                    
             
 :javascript
     $(document).ready(()=>{
