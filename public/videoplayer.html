@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<head>
+  <title>ETH Video Portal Beautifier</title>
+  <!-- Mobile scaling -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- jQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!-- Semanti UI -->
+  <link href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
+  <!-- templating -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/3.0.1/mustache.js"></script>
+  <!-- plyr video player-->
+  <script src="https://cdn.plyr.io/3.5.6/plyr.js"></script>
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.5.6/plyr.css" />
+</head>
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+    }
+    @media only screen and (min-width: 600px) {
+        .cont {
+            width: 80%;
+        }
+    }
+</style>
+<body>
+    <div class="cont">
+            <video id="player" playsinline controls></video>
+    </div>
+</body>
+<script>
+    const player = new Plyr('#player', {
+        "autoplay": true
+    });
+  $(document).ready(()=>{
+        var url = $.urlParam('v');
+        document.getElementById('player').src = url;
+  });
+  
+  function get_location(url){
+      // Returns objects with attrs pathname, hostname etc.
+      // Shamelessly stolen from https://stackoverflow.com/questions/736513/how-do-i-parse-a-url-into-hostname-and-path-in-javascript
+      var l = document.createElement("a");
+      l.href = url;
+      return l;
+  }
+  
+  $.urlParam = function(name){
+      // Shamelessly stolen from https://stackoverflow.com/a/25359264/3424423
+      var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+      if (results==null) {
+          return null;
+      }
+      return decodeURI(results[1]) || 0;
+  }
+</script>

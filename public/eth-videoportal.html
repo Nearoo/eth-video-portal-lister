@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<head>
+  <title>ETH Video Portal Mirror</title>
+  <!-- Mobile scaling -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- jQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!-- Semanti UI -->
+  <link href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
+  <!-- Templating -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/3.0.1/mustache.js"></script>
+  <!-- Cookies -->
+  <script src="https://cdn.jsdelivr.net/npm/js-cookie@beta/dist/js.cookie.min.js"></script>
+
+  <style>
+    body {
+        width: 100%;
+        display: flex;
+        justify-content: space-around;
+    }
+    
+    #center-flex {
+        flex-basis: 50%;
+        padding: 10px;
+        padding-top: 40px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    #hidden {
+        display: none;
+    }
+    
+    #copy-textarea {
+        display: none;
+    }
+    
+    #visible-only-with-content {
+        display: none;
+    }
+
+    @media only screen and (max-width: 600px) {
+      #center-flex {
+        flex-basis: 99%;
+        }
+      .header {
+        font-size: 1.1em !important;
+      }
+
+      .item {
+        padding-bottom: 1em !important;
+        padding-top: 1em !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="center-flex">
+    <div class="ui active centered inline loader" id="loader"></div>
+    <div id="visible-only-with-content">
+      <div class="ui">
+        <div class="h1 ui left floated header page-title"></div>
+        <a class="ui compact label page-original-url">
+          <i class="external alternate icon"></i>
+          original
+        </a>
+      </div>
+      <div class="ui segment" id="main-list-segment">
+        <div class="ui divided relaxed list" id="main-list"></div>
+      </div>
+    </div>
+    <div class="ui segment piled">
+      <div class="ui fluid action input">
+        <input id="add-lecture-input" placeholder="ETH Video Portal URL" type="text">
+        <div class="ui compact button" onclick="show_lecture($('#add-lecture-input').val())">
+          Add Lecture
+        </div>
+        <div class="ui circular icon button tiny" onclick="dom_showAddLectureModal()">
+          <i class="info icon"></i>
+        </div>
+      </div>
+    </div>
+    <textarea id="copy-textarea"></textarea>
+    <div class="ui vertical segment">
+      <div class="ui right floated sub header">
+        © Silas Gyger, 2019
+        <a class="ui label" href="https://github.com/Nearoo/eth-video-portal-lister">
+          <i class="github icon"></i>
+          source
+        </a>
+      </div>
+    </div>
+  </div>
+  <div id="hidden">
+    <div id="template-listitem">
+      <div class="item" id='{{item_id}}'>
+        <div class="right floated content">
+          <div class="ui icon button" onclick="copy('{{link}}')">
+            <i class="copy icon"></i>
+          </div>
+          <div class="ui icon button" onclick="play('{{link}}')">
+            <i class="play icon"></i>
+          </div>
+        </div>
+        <div class="left floated content">
+          <div class="ui header">
+            {{title}}
+          </div>
+          <div class="description">
+            {{date}}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ui basic modal" id="new-lecture-modal">
+      <div class="header">
+        Add New Lecture
+      </div>
+      <div class="image content">
+        <div class="description">
+          <p>
+            Copy the link of the desired lecture on the <a href="https://www.video.ethz.ch/lectures.html">ETH Video Portal</a>
+            and paste it into the text field. Bookmark the link you get redirected to for easy access.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+<script>
+  $(document).ready(()=>{
+      var ethUrl = $.urlParam('url');
+      if(ethUrl){
+          dom_createList(ethUrl);
+      } else {
+          $("#visible-only-with-content").hide();
+          $("#loader").hide()
+      }
+  })
+
+  // Simple, insecure hashfunction
+  // Shamelessly stolen from https://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
+  String.prototype.hashCode = function() {
+    var hash = 0;
+    if (this.length == 0) {
+        return hash;
+    }
+    for (var i = 0; i < this.length; i++) {
+        var char = this.charCodeAt(i);
+        hash = ((hash<<5)-hash)+char;
+        hash = hash & hash;
+    }
+    return hash;
+  }
+  
+  function add_element(data){
+      var templ = $("#template-listitem").html();
+      var processed = Mustache.render(templ, data);
+      $("#main-list").append($(processed));
+  }
+  
+  function play(url){
+      get_external(url, page => {
+          var vid_url = get_videoUrl(page);
+          window.open("/videoplayer?v=" + vid_url, "_blank");
+      });
+      mark_as_visited(url);
+  }
+  
+  function copy(url){
+      get_external(url, page => {
+          var vid_url = get_videoUrl(page);
+          var textar = $("#copy-textarea");
+          textar.show();
+          textar.val(vid_url);
+  
+          document.getElementById("copy-textarea").select();
+          document.execCommand("copy");
+          textar.hide();
+      });
+      mark_as_visited(url);
+  }
+  
+  function dom_createList(url){
+      get_external(url, (page)=>{
+          // Create lectures list
+          page.find("div.newsListBox").each((el, val)=>{
+              var li = $(val);
+              var path = li.find("a").attr("href")
+              var base = get_location(url).hostname;
+              var link = `https://${base}/${path}`;
+              add_element({
+                  title: li.find("h2").text(),
+                  link: link,
+                  date: li.find("p").text(),
+                  item_id: link.hashCode(),
+              });
+
+              if(get_visited(link)){
+                mark_as_visited(link)
+              };
+          });
+  
+          // Set title of page 
+          var lec_title = page.find("h1").html()
+          $(".page-title").html(`<i class="tv icon"></i> ${lec_title}`);
+          $(".page-original-url").attr("href", url);
+          $("title").html("ETH Video Portal Beautifyer: " + lec_title);
+  
+          $("#visible-only-with-content").show();
+          $("#loader").hide()
+      });
+  }
+  
+  function dom_showAddLectureModal(){
+      $("#new-lecture-modal").modal('show');
+  }
+  
+  $("#new-lecture-modal").modal({
+      onApprove: () => {
+          var uri = "/eth-videolister?url=" + $("#url-input").val();
+          window.location.href = encodeURI(uri);
+      }
+  });
+  
+  function get_videoUrl(page){
+      // Returns video url hidden in eth video page "page"
+      return page.find("li.video").first().find("a").first().attr("href");
+  }
+  
+  // Returns an external page proxied through server, circumventing CORS
+  function get_external(url, callback){
+      $.get(encodeURI("/proxy-get?url=" + url), {}, (data, foo, bar) => {
+          var virtualDocument = document.implementation.createHTMLDocument('virtual');
+          callback($(data, virtualDocument));
+      });
+  }
+  
+  function get_location(url){
+      // Returns objects with attrs pathname, hostname etc.
+      // Shamelessly stolen from https://stackoverflow.com/questions/736513/how-do-i-parse-a-url-into-hostname-and-path-in-javascript
+      var l = document.createElement("a");
+      l.href = url;
+      return l;
+  }
+
+  function mark_as_visited(url){
+    Cookies.set("visited--" + url.hashCode(), true, {expires: 1000});
+    console.log(`#${url.hashCode()}`);
+    $(`#${url.hashCode()} > .left.floated.content > .ui.header`).addClass("disabled");
+  }
+
+  function get_visited(url){
+    return Cookies.get("visited--" + url.hashCode());
+  }
+  
+  // Allows to access ?foo=bar as $.urlParam('foo')
+  $.urlParam = function(name){
+      // Shamelessly stolen from https://stackoverflow.com/a/25359264/3424423
+      var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+      if (results==null) {
+          return null;
+      }
+      return decodeURI(results[1]) || 0;
+  }
+  
+  function show_lecture(url){
+      window.location.href = encodeURI("/eth-videoportal?url=" + url);
+  }
+</script>
