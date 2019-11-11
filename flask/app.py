@@ -1,7 +1,10 @@
 from flask import Flask, request, abort
 from requests import get
+from urllib.parse import urlparse
+from flask_cors import CORS
 
 app = Flask(__name__, static_folder="../public")
+CORS(app)
 
 @app.route("/")
 def index():
