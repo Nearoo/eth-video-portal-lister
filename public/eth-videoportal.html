@@ -248,13 +248,13 @@
   }
 
   function mark_as_visited(url){
-    Cookies.set("visited--" + url.hashCode(), true, {expires: 1000});
+    Cookies.set("watched-lecture-" + url.hashCode(), true, {expires: 1000});
     console.log(`#${url.hashCode()}`);
     $(`#${url.hashCode()} > .left.floated.content > .ui.header`).addClass("disabled");
   }
 
   function get_visited(url){
-    return Cookies.get("visited--" + url.hashCode());
+    return Cookies.get("watched-lecture-" + url.hashCode());
   }
   
   // Allows to access ?foo=bar as $.urlParam('foo')
