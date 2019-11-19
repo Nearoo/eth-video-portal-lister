@@ -165,9 +165,9 @@
   function play(url){
       get_external(url, page => {
           var vid_url = get_videoUrl(page);
+          mark_as_visited(url);
           window.open("/videoplayer?v=" + vid_url, "_blank");
       });
-      mark_as_visited(url);
   }
   
   function copy(url){
@@ -180,8 +180,9 @@
           document.getElementById("copy-textarea").select();
           document.execCommand("copy");
           textar.hide();
+          mark_as_visited(url);
       });
-      mark_as_visited(url);
+
   }
   
   function dom_createList(url){
