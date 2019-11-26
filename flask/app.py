@@ -35,4 +35,6 @@ def proxy_get():
 def _404(_):
     return app.send_static_file("404.html"), 404
 
-app.run(debug=False)
+
+if __name__ == "__main__":
+    app.run(debug=False)
