@@ -100,6 +100,9 @@
           <div class="ui icon button" title="copy url to clipboard" onclick="copy('{{link}}')">
             <i class="copy icon"></i>
           </div>
+          <div class="ui icon button" title="play video" onclick="download('{{link}}', '{{title}} {{description}}')">
+            <i class="download icon"></i>
+          </div>
           <div class="ui icon button" title="play video" onclick="play('{{link}}', '{{title}}: {{description}}')">
             <i class="play icon"></i>
           </div>
@@ -247,6 +250,10 @@
       let l = document.createElement("a");
       l.href = url;
       return l;
+  }
+
+  function download(url, title){
+    alert(`Downloading... (not yet implemented) \n\n Title:\n    ${title}\n\nURL:\n    ${url}`);
   }
 
   function mark_as_visited(url){
