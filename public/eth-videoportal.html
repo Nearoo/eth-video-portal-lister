@@ -100,7 +100,7 @@
           <div class="ui icon button" title="copy url to clipboard" onclick="copy('{{link}}')">
             <i class="copy icon"></i>
           </div>
-          <div class="ui icon button" title="play video" onclick="play('{{link}}')">
+          <div class="ui icon button" title="play video" onclick="play('{{link}}', '{{title}}: {{description}}')">
             <i class="play icon"></i>
           </div>
         </div>
@@ -109,7 +109,7 @@
             {{title}}
           </div>
           <div class="description">
-            {{date}}
+            {{description}}
           </div>
         </div>
       </div>
@@ -132,7 +132,7 @@
 
 <script>
   $(document).ready(()=>{
-      var ethUrl = $.urlParam('url');
+      let ethUrl = $.urlParam('url');
       if(ethUrl){
           dom_createList(ethUrl);
       } else {
@@ -144,12 +144,12 @@
   // Simple, insecure hashfunction
   // Shamelessly stolen from https://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
   String.prototype.hashCode = function() {
-    var hash = 0;
+    let hash = 0;
     if (this.length == 0) {
         return hash;
     }
-    for (var i = 0; i < this.length; i++) {
-        var char = this.charCodeAt(i);
+    for (let i = 0; i < this.length; i++) {
+        let char = this.charCodeAt(i);
         hash = ((hash<<5)-hash)+char;
         hash = hash & hash;
     }
@@ -157,23 +157,23 @@
   }
   
   function add_element(data){
-      var templ = $("#template-listitem").html();
-      var processed = Mustache.render(templ, data);
+      let templ = $("#template-listitem").html();
+      let processed = Mustache.render(templ, data);
       $("#main-list").append($(processed));
   }
   
-  function play(url){
+  function play(url, title){
       get_external(url, page => {
-          var vid_url = get_videoUrl(page);
+          let vid_url = get_videoUrl(page);
           mark_as_visited(url);
-          window.open("/videoplayer?v=" + vid_url, "_blank");
+          window.open(`/videoplayer?v=${vid_url}&title=${title}`, "_blank");
       });
   }
   
   function copy(url){
       get_external(url, page => {
-          var vid_url = get_videoUrl(page);
-          var textar = $("#copy-textarea");
+          let vid_url = get_videoUrl(page);
+          let textar = $("#copy-textarea");
           textar.show();
           textar.val(vid_url);
   
@@ -189,14 +189,15 @@
       get_external(url, (page)=>{
           // Create lectures list
           page.find("div.newsListBox").each((el, val)=>{
-              var li = $(val);
-              var path = li.find("a").attr("href")
-              var base = get_location(url).hostname;
-              var link = `https://${base}/${path}`;
+              let li = $(val);
+              let path = li.find("a").attr("href")
+              let base = get_location(url).hostname;
+              let link = `https://${base}/${path}`;
+              let description = li.find("p").text().split(/\s+/).join(" ");
               add_element({
                   title: li.find("h2").text(),
                   link: link,
-                  date: li.find("p").text(),
+                  description: description,
                   item_id: link.hashCode(),
               });
 
@@ -206,7 +207,7 @@
           });
   
           // Set title of page 
-          var lec_title = page.find("h1").html()
+          let lec_title = page.find("h1").html()
           $(".page-title").html(`<i class="tv icon"></i> ${lec_title}`);
           $(".page-original-url").attr("href", url);
           $("title").html("ETH Video Portal Beautifyer: " + lec_title);
@@ -222,7 +223,7 @@
   
   $("#new-lecture-modal").modal({
       onApprove: () => {
-          var uri = "/eth-videolister?url=" + $("#url-input").val();
+          let uri = "/eth-videolister?url=" + $("#url-input").val();
           window.location.href = encodeURI(uri);
       }
   });
@@ -235,7 +236,7 @@
   // Returns an external page proxied through server, circumventing CORS
   function get_external(url, callback){
       $.get(encodeURI("/proxy-get?url=" + url), {}, (data, foo, bar) => {
-          var virtualDocument = document.implementation.createHTMLDocument('virtual');
+          let virtualDocument = document.implementation.createHTMLDocument('virtual');
           callback($(data, virtualDocument));
       });
   }
@@ -243,7 +244,7 @@
   function get_location(url){
       // Returns objects with attrs pathname, hostname etc.
       // Shamelessly stolen from https://stackoverflow.com/questions/736513/how-do-i-parse-a-url-into-hostname-and-path-in-javascript
-      var l = document.createElement("a");
+      let l = document.createElement("a");
       l.href = url;
       return l;
   }
@@ -256,11 +257,11 @@
   function get_visited(url){
     return Cookies.get("watched-lecture-" + url.hashCode());
   }
-  
+
   // Allows to access ?foo=bar as $.urlParam('foo')
   $.urlParam = function(name){
       // Shamelessly stolen from https://stackoverflow.com/a/25359264/3424423
-      var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+      let results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
       if (results==null) {
           return null;
       }

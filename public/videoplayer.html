@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <head>
-  <title>ETH Video</title>
+  <title>ETH Videoportal</title>
   <!-- Mobile scaling -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- jQuery -->
@@ -39,6 +39,7 @@
   $(document).ready(()=>{
         var url = $.urlParam('v');
         document.getElementById('player').src = url;
+        document.title = `${$.urlParam('title')} | ETH Videoportal`
   });
   
   function get_location(url){
