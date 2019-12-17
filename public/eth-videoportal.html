@@ -51,6 +51,10 @@
         display: none;
     }
 
+    .pointerhover:hover {
+      cursor: pointer;
+    }
+
     @media only screen and (max-width: 600px) {
       #center-flex {
         flex-basis: 99%;
@@ -115,8 +119,9 @@
           </div>
         </div>
         <div class="left floated content">
-          <div class="ui header">
+          <div class="ui header pointerhover" onclick="toggle_visited  ('{{link}}')">
             {{title}}
+            <a class="ui blue empty circular label"></a>
           </div>
           <div class="description">
             {{description}}
@@ -260,12 +265,30 @@
   }
 
   function mark_as_visited(url){
-    Cookies.set("watched-lecture-" + url.hashCode(), true, {expires: 1000});
+    Cookies.set(get_cookie_name_for(url), true, {expires: 1000});
     $(`#${url.hashCode()} > .left.floated.content > .ui.header`).addClass("disabled");
+    $(`#${url.hashCode()} > .left.floated.content > .ui.header > a`).removeClass("blue");
+  }
+
+  function get_cookie_name_for(url){
+    return "watched-lecture-" + url.hashCode();
+  }
+  function mark_as_unvisited(url){
+    Cookies.remove(get_cookie_name_for(url));
+    $(`#${url.hashCode()} > .left.floated.content > .ui.header`).removeClass("disabled");
+    $(`#${url.hashCode()} > .left.floated.content > .ui.header > a`).addClass("blue");
+  }
+
+  function toggle_visited(url){
+    if(get_visited(url)){
+      mark_as_unvisited(url);
+    } else {
+      mark_as_visited(url);
+    }
   }
 
   function get_visited(url){
-    return Cookies.get("watched-lecture-" + url.hashCode());
+    return Cookies.get(get_cookie_name_for(url));
   }
 
   // Allows to access ?foo=bar as $.urlParam('foo')
