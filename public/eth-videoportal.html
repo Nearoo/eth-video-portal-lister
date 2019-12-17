@@ -119,9 +119,9 @@
           </div>
         </div>
         <div class="left floated content">
-          <div class="ui header pointerhover" onclick="toggle_visited  ('{{link}}')">
+          <div class="ui header" >
             {{title}}
-            <a class="ui blue empty circular label"></a>
+            <a class="ui grey circular empty label pointerhover" onclick="toggle_visited  ('{{link}}')"></a>
           </div>
           <div class="description">
             {{description}}
@@ -267,7 +267,7 @@
   function mark_as_visited(url){
     Cookies.set(get_cookie_name_for(url), true, {expires: 1000});
     $(`#${url.hashCode()} > .left.floated.content > .ui.header`).addClass("disabled");
-    $(`#${url.hashCode()} > .left.floated.content > .ui.header > a`).removeClass("blue");
+    $(`#${url.hashCode()} > .left.floated.content > .ui.header > a`).removeClass("grey");
   }
 
   function get_cookie_name_for(url){
@@ -276,7 +276,7 @@
   function mark_as_unvisited(url){
     Cookies.remove(get_cookie_name_for(url));
     $(`#${url.hashCode()} > .left.floated.content > .ui.header`).removeClass("disabled");
-    $(`#${url.hashCode()} > .left.floated.content > .ui.header > a`).addClass("blue");
+    $(`#${url.hashCode()} > .left.floated.content > .ui.header > a`).addClass("grey");
   }
 
   function toggle_visited(url){
