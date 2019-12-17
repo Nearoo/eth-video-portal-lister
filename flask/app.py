@@ -2,9 +2,16 @@ from flask import Flask, request, abort
 from requests import get
 from urllib.parse import urlparse
 from flask_cors import CORS
+from flask_caching import Cache
 
 app = Flask(__name__, static_folder="../public")
+
+# Disable cross-origin
 CORS(app)
+
+# Enable caching
+cache = Cache(config={'CACHE_TYPE': 'simple'})
+cache.init_app(app)
 
 @app.route("/")
 def index():
@@ -21,13 +28,15 @@ def video_player():
 
 @app.route("/proxy-get")
 def proxy_get():
-    url = request.args["url"]
+    url = request.args.get("url", None)
     headers = {
         "Accept": "text/html",
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36',
     }
     if url:
-        return get(url, headers=headers).content
+        if not cache.get(url):
+            cache.set(url, get(url, headers=headers).content)
+        return cache.get(url)
     else:
         abort(404)
 
