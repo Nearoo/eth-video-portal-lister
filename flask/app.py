@@ -33,6 +33,10 @@ def proxy_get():
         "Accept": "text/html",
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36',
     }
+    
+    if app.debug and url == "dummy":
+        return app.send_static_file("eth_dummy.html")
+
     if url:
         if not cache.get(url):
             cache.set(url, get(url, headers=headers).content)
